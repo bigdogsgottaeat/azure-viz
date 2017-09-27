@@ -1,0 +1,50 @@
+#toolbar {
+  height: 42px;
+  text-align: left;
+  background: -webkit-linear-gradient(top, rgba(0, 122, 204, 0.8) 0%, rgba(0, 122, 204, 0.8) 100%);
+  padding: 5px;
+}
+
+#toolbar .layout {
+  top: 50%;
+  position: relative;
+  transform: translateY(-50%);
+}
+
+#toolbar .tool {
+  padding-right: 5px;
+  padding-bottom: 10px;
+}
+
+#toolbar .tool:last-child {
+  padding-right: 0;
+}
+
+#toolbar .button {
+    width: 36px;
+    height: 36px;
+    padding-bottom: 10px;
+    border-radius: 50%;
+    border: none;
+    overflow: hidden;
+    background: rgb(0, 122, 204);
+ }
+
+#toolbar .button:hover {
+    background: rgb(26, 164, 255);
+}
+
+#toolbar .button:focus {
+    outline: 0;
+} 
+
+#toolbar .button img {
+    display: block;
+    width: 76%;
+    padding: 12%;
+    height: auto;
+}
+
+#show-tooltip-checkbox-label.disabled {
+  color: #888;
+}
