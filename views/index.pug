@@ -1,5 +1,11 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  div.main(style="width: 100%; height:100%;")
+     div#toolbar
+        div.layout 
+            span.tool
+              button.button(onclick="requestUploadVideo()")
+                img(src="/icons/add.svg" style="padding-top:8px; width:18px; height:18px; text-align:center;" alt="Home")
+              input#criteria(name="citeria" style="vertical-align: top; margin-left: 5px; margin-top: 4px; height: 24px; width: 500px;" placeholder="Search Videos...")
+ 
