@@ -31,6 +31,8 @@ app.all('/retrieve', function(req, res, next) {
 
   console.log('retrieving');
 
+  res.send('results');
+
 });
 
 app.get('/', routes.index);
