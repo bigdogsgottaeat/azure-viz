@@ -5,10 +5,11 @@ $(function() {
 
         if (e.keyCode == 13) {
             $.get('/retrieve', parameters, function(data) {
-                alert('fred');       
-            });
+                $('#mainbox').html(data);
+             });
         }        
 
     });
    
 });
+

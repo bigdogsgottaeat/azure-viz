@@ -34,8 +34,16 @@ if ('development' == app.get('env')) {
 app.all('/retrieve', function(req, res, next) {
 
   console.log('retrieving');
+  var card = compiledCard({
+    name: 'Defense Video',
+    createTime: '20 September, 2017',
+    userName:'Alex De Gruiter',
+    id: '12122178'
+  });
 
-  res.send('results');
+  console.log(card);
+
+  res.send(card);
 
 });
 

@@ -1,6 +1,7 @@
 extends layout
 
 block content
+  script(src="/javascripts/responder.js")
   div.main(style="width: 100%; height:100%;")
     div#toolbar
       div.layout 
@@ -8,7 +9,7 @@ block content
           button.button(onclick="requestUploadVideo()")
             img(src="/icons/add.svg" style="padding-top:8px; width:18px; height:18px; text-align:center;" alt="Home")
           input#criteria(name="citeria" style="vertical-align: top; margin-left: 5px; margin-top: 4px; margin-right:4px; height: 24px; width: 500px;" placeholder="Search Videos...")
-          button.button(onclick="requestSearch()")
+          button.button(id="search" onclick="requestSearch()")
             img(src="/icons/magnifier.svg" style="padding-top:8px; width:17px; height:17px; text-align:center;" alt="Home")
      
     div.border(style="position: absolute; overflow: auto; top:53px; bottom: 30px; left: 0px; right: 0px;")
