@@ -9,6 +9,7 @@ var http = require('http');
 var path = require('path');
 var azure = require('azure-storage');
 var pug = require('pug');
+var formidable = require('formidable');
 
 var app = express();
 
@@ -45,11 +46,9 @@ app.all('/retrieve', function(req, res, next) {
         name: result.entries[iBlob].name,
         createTime: result.entries[iBlob].lastModified,
         userName:'Alex De Gruiter',
-        id: result.entries[iBlob].etag
+        id: 'videos' + '/' + result.entries[iBlob].name
         
       });
-
-      console.log(result.entries[iBlob]);
 
      }
 
@@ -58,6 +57,10 @@ app.all('/retrieve', function(req, res, next) {
      res.send(cards);
      
   });
+
+});
+
+app.post('/upload', function (req, res, next) {
 
 });
 

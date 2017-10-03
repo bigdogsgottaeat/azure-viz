@@ -34,7 +34,7 @@
     color: white;
 }
 
-.modal-body {padding: 2px 16px;display:block;}
+.modal-body {padding: 16px 20px; display:block;}
 
 .modal-btn {
      position: relative;
@@ -86,7 +86,7 @@
 .modal-label {
     color: black;
     font-family: sans-serif;
-    font-size: 10;
+    font-size: 18;
     font-weight: bold;
   }
 

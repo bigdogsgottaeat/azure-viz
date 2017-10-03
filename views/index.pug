@@ -3,16 +3,35 @@ extends layout
 block content
   script(src="/javascripts/responder.js")
   div.main(style="width: 100%; height:100%;")
+
+    div#waitDialog(class="modal")
+      div(style="position:fixed; text-align: center; top:300px; left:42%;")
+         div.loader
+
+    div#uploadDialog(class="modal")
+      div(class="modal-content")
+        div(class="modal-header")
+          span(class="close") &times;
+          h2 File Upload
+        div(class="modal-body")
+          .p &nbsp;
+          label(class="modal-label" for="filename" style="margin-top:12px; padding-top:40px; font-size:18px;") Video File
+          div(style="display: block; width:100%; padding-top:8px;")
+            input(class="modal-entry"  type="file" id="filename" name="filename" placeholder="File Name..." style="width:80%; height:32px; margin-right:20px")
+            button(class="modal-btn" id="Browse") Browse...              
+        div(style="padding: 24px")
+            button(class="modal-btn" id="Upload") Upload   
+
     div#toolbar
       div.layout 
         span.tool
-          button.button(onclick="requestUploadVideo()")
+          button.button(onclick="uploadVideo()")
             img(src="/icons/add.svg" style="padding-top:8px; width:18px; height:18px; text-align:center;" alt="Home")
           input#criteria(name="citeria" style="vertical-align: top; margin-left: 5px; margin-top: 4px; margin-right:4px; height: 24px; width: 500px;" placeholder="Search Videos...")
           button.button(id="search" onclick="requestSearch()")
             img(src="/icons/magnifier.svg" style="padding-top:8px; width:17px; height:17px; text-align:center;" alt="Home")
      
-    div.border(style="position: absolute; overflow: auto; top:53px; bottom: 30px; left: 0px; right: 0px;")
+    div.border(style="position: absolute; overflow: auto; top:52px; bottom: 20px; left: 0px; right: 0px;")
       div#mainbox
     div.statusbar
   script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js")  
