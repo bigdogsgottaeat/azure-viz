@@ -35,35 +35,29 @@ app.all('/retrieve', function(req, res, next) {
   console.log('retrieving');
   
   var blobSvc = azure.createBlobService('tsoblob1', 'ueeY47IjZthiit45wMvVzecnqnkxJnoz0EPfxLHA5gJNGBKRuF7RsBOPHrQ2Ou2QBFNbj+RqP+k89srwPssDaQ==');
- 
+  var cards = "";
+  
   blobSvc.listBlobsSegmented('videos', null, function(error, result, response) {
 
-    for (var iBlob in result.entries) {
+     for (var iBlob in result.entries) {
 
-      compiledCard({
-        name: 'Defense Video',
-        createTime: '20 September, 2017',
+      cards += compiledCard({
+        name: result.entries[iBlob].name,
+        createTime: result.entries[iBlob].lastModified,
         userName:'Alex De Gruiter',
-        id: '12122178'
+        id: result.entries[iBlob].etag
+        
       });
-      
-      console.log(result.entries[iBlob].name);
-      console.log('-------');
 
-    }
+      console.log(result.entries[iBlob]);
 
+     }
+
+     console.log('Cards: ' + cards);
+     
+     res.send(cards);
+     
   });
-
-  var card = compiledCard({
-    name: 'Defense Video',
-    createTime: '20 September, 2017',
-    userName:'Alex De Gruiter',
-    id: '12122178'
-  });
-
-  console.log(card);
-
-  res.send(card);
 
 });
 
