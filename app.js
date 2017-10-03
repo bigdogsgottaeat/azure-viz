@@ -32,8 +32,28 @@ if ('development' == app.get('env')) {
 }
 
 app.all('/retrieve', function(req, res, next) {
-
   console.log('retrieving');
+  
+  var blobSvc = azure.createBlobService('tsoblob1', 'ueeY47IjZthiit45wMvVzecnqnkxJnoz0EPfxLHA5gJNGBKRuF7RsBOPHrQ2Ou2QBFNbj+RqP+k89srwPssDaQ==');
+ 
+  blobSvc.listBlobsSegmented('videos', null, function(error, result, response) {
+
+    for (var iBlob in result.entries) {
+
+      compiledCard({
+        name: 'Defense Video',
+        createTime: '20 September, 2017',
+        userName:'Alex De Gruiter',
+        id: '12122178'
+      });
+      
+      console.log(result.entries[iBlob].name);
+      console.log('-------');
+
+    }
+
+  });
+
   var card = compiledCard({
     name: 'Defense Video',
     createTime: '20 September, 2017',
