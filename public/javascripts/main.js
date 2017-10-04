@@ -10,6 +10,12 @@ $(function() {
         }        
 
     });
+
+    $('#selector').on('change', function(e) {
+
+        alert('im here a');
+
+    })
    
 });
 

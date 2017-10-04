@@ -19,7 +19,7 @@ block content
           div(style="display: block; width:100%; padding-top:8px;")
             input(class="model-input"  type="text" id="filename" name="filename" placeholder="<No file selected>" style="width:70%; height:32px; margin-right:20px" readonly)
             button(class="modal-btn" id="Browse" style="z-index:1;") Select...              
-            input(class="hide"  type="file" style="z-index:1; left:-80px")
+            input#selector(name="selector" class="hide"  type="file" style="z-index:1; left:-120px")
           div(style="padding: 24px")
             button(class="modal-btn" id="Upload") Upload   
 
