@@ -100,3 +100,15 @@ h1 {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   } 
+
+  input.hide { 
+    position: relative;
+    -moz-opacity:0; 
+    filter:alpha(opacity: 0);
+    opacity: 0; 
+    z-index: 1; 
+    width:110px;
+    height:30px;
+  } 
+
+  

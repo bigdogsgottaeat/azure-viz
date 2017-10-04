@@ -15,11 +15,12 @@ block content
           h2 File Upload
         div(class="modal-body")
           .p &nbsp;
-          label(class="modal-label" for="filename" style="margin-top:12px; padding-top:40px; font-size:18px;") Video File
+          label(class="modal-label" for="filename" style="margin-top:12px; padding-top:40px; font-size:18px;") Please select the Video File (mp4)
           div(style="display: block; width:100%; padding-top:8px;")
-            input(class="modal-entry"  type="text" id="filename" name="filename" placeholder="File Name..." style="width:80%; height:32px; margin-right:20px")
-            button(class="modal-btn" id="Browse") Browse...              
-        div(style="padding: 24px")
+            input(class="model-input"  type="text" id="filename" name="filename" placeholder="<No file selected>" style="width:70%; height:32px; margin-right:20px" readonly)
+            button(class="modal-btn" id="Browse" style="z-index:1;") Select...              
+            input(class="hide"  type="file" style="z-index:1; left:-80px")
+          div(style="padding: 24px")
             button(class="modal-btn" id="Upload") Upload   
 
     div#toolbar
