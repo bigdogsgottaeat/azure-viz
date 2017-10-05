@@ -3,6 +3,8 @@
   text-align: left;
   background: -webkit-linear-gradient(top, rgba(0, 122, 204, 0.8) 0%, rgba(0, 122, 204, 0.8) 100%);
   padding: 5px;
+  width:100%;
+  overflow: hidden;
 }
 
 #toolbar .layout {

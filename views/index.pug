@@ -2,26 +2,7 @@ extends layout
 
 block content
   script(src="/javascripts/responder.js")
-  div.main(style="width: 100%; height:100%;")
-
-    div#waitDialog(class="modal")
-      div(style="position:fixed; text-align: center; top:300px; left:42%;")
-         div.loader
-
-    div#uploadDialog(class="modal")
-      div(class="modal-content")
-        div(class="modal-header")
-          span(class="close") &times;
-          h2 File Upload
-        div(class="modal-body")
-          .p &nbsp;
-          label(class="modal-label" for="filename" style="margin-top:12px; padding-top:40px; font-size:18px;") Please select the Video File (mp4)
-          div(style="display: block; width:100%; padding-top:8px;")
-            input(class="model-input"  type="text" id="filename" name="filename" placeholder="<No file selected>" style="width:70%; height:32px; margin-right:20px" readonly)
-            button(class="modal-btn" id="Browse" style="z-index:1;") Select...              
-            input#selector(name="selector" class="hide"  type="file" style="z-index:1; left:-120px")
-          div(style="padding: 24px")
-            button(class="modal-btn" id="Upload") Upload   
+  div.main(style="width: 100%; height:100%; overflow:hidden;")
 
     div#toolbar
       div.layout 
@@ -32,8 +13,38 @@ block content
           button.button(id="search" onclick="requestSearch()")
             img(src="/icons/magnifier.svg" style="padding-top:8px; width:17px; height:17px; text-align:center;" alt="Home")
      
-    div.border(style="position: absolute; overflow: auto; top:52px; bottom: 20px; left: 0px; right: 0px;")
-      div#mainbox
+    div.border(style="position:absolute; overflow:auto; top:52px; bottom:20px; left: 0px; right: 0px;")
+      div.mainbox(id="mainbox")
     div.statusbar
+
+    div#waitDialog(class="modal")
+      div(style="position:fixed; text-align: center; top:300px; left:42%;")
+         div.loader
+
+    div#uploadDialog(class="modal")
+      div(class="modal-content")
+        div(class="modal-header")
+          span(class="close") &times;
+          h2 Video Upload
+        div(class="modal-body")
+          .p &nbsp;
+          label(class="modal-label" for="filename" style="margin-top:12px; padding-top:40px; font-size:18px;") Please select the Video File (mp4)
+          div(style="display: block; width:100%; padding-top:8px;")
+            input#filename(class="model-input"  type="text" name="filename" placeholder="<No file selected>" style="width:70%; height:32px; margin-right:20px" readonly)
+            button(class="modal-btn" id="Browse" style="z-index:1;") Select...              
+            input#selector(name="selector" class="hide"  type="file" style="z-index:1; left:-120px")
+          div(style="padding: 24px")
+            button#upload(class="modal-btn" disabled style="color:LightGrey; background:grey") Upload   
+   
+    div#playVideoDialog(class="modal")
+      div(class="modal-content")
+        div(class="modal-header")
+          span(class="close") &times;
+          h2 Video Upload
+        div(class="modal-body")        
+          div(style="width: 70%; display:inline-block;")
+            video(id="vid1" width="680" height="360" controls)
+              source(id="vid1-source" src="http://sample-videos.com/video/mp4/720/big_buck_bunny_720p_1mb.mp4" type="video/mp4")
+   
   script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js")  
   script(src="/javascripts/main.js")

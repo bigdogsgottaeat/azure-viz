@@ -9,7 +9,8 @@ var http = require('http');
 var path = require('path');
 var azure = require('azure-storage');
 var pug = require('pug');
-var formidable = require('formidable');
+var multiparty = require('multiparty');
+var os = require('os');
 
 var app = express();
 
@@ -26,6 +27,7 @@ app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
 var compiledCard = pug.compileFile('./views/card.pug')
+var blobSvc = azure.createBlobService('tsoblob1', 'ueeY47IjZthiit45wMvVzecnqnkxJnoz0EPfxLHA5gJNGBKRuF7RsBOPHrQ2Ou2QBFNbj+RqP+k89srwPssDaQ==');      
 
 // development only
 if ('development' == app.get('env')) {
@@ -35,7 +37,6 @@ if ('development' == app.get('env')) {
 app.all('/retrieve', function(req, res, next) {
   console.log('retrieving');
   
-  var blobSvc = azure.createBlobService('tsoblob1', 'ueeY47IjZthiit45wMvVzecnqnkxJnoz0EPfxLHA5gJNGBKRuF7RsBOPHrQ2Ou2QBFNbj+RqP+k89srwPssDaQ==');
   var cards = "";
   
   blobSvc.listBlobsSegmented('videos', null, function(error, result, response) {
@@ -46,13 +47,10 @@ app.all('/retrieve', function(req, res, next) {
         name: result.entries[iBlob].name,
         createTime: result.entries[iBlob].lastModified,
         userName:'Alex De Gruiter',
-        id: 'videos' + '/' + result.entries[iBlob].name
-        
+        id: 'https://tsoblob1.blob.core.windows.net/videos/' + result.entries[iBlob].name 
       });
 
      }
-
-     console.log('Cards: ' + cards);
      
      res.send(cards);
      
@@ -60,8 +58,42 @@ app.all('/retrieve', function(req, res, next) {
 
 });
 
-app.post('/upload', function (req, res, next) {
+app.post('/upload', function (req, res, next) { 
+  var form = new multiparty.Form();
 
+  var files = [];
+
+  form
+  .on('part', function(part) {
+
+    if (part.filename) {
+      files.push(part.filename);
+
+      var size = part.byteCount - part.byteOffset;
+      var name = part.filename;
+
+      console.log("Name: '" + name + "' - '" + size + "'");
+      
+      blobSvc.createBlockBlobFromStream('videos', name, part, size, function (error) {
+        console.log(error);
+        res.send({'Azure': error});
+      })
+
+    } else {
+      form.handlePart(part);
+    }
+
+  })
+  .on('err', function(err) {
+    console.log(err);
+    res.send(err)
+  })
+  .on('end', function() {
+    res.end('received all files');    
+  });
+
+  form.parse(req);
+   
 });
 
 app.get('/', routes.index);
