@@ -37,18 +37,18 @@ block content
             button#upload(class="modal-btn" disabled style="color:LightGrey; background:grey") Upload   
    
     div#playVideoDialog(class="modal")
-      div(class="modal-content" style="width:695px")
+      div(class="modal-content" style="width:684px; height:500px;")
         div(class="modal-header")
           span(class="close") &times;
           h2 Video Player
         div(class="modal-body")        
           div(style="display:inline-block;")
-            video(id="vid1" width="643px" height="362px" preload="auto")
+            video(id="vid1" width="643px" height="368px" preload="auto")
               source(id="vid1-source" type="video/mp4")
-          div(style="display: block; width:100%; padding-top:8px;")
-            button#play(class="model-small-button" disabled style="color:LightGrey; background:grey;") &#x25BA;   
-            input#seekbar(type="range" value="0" style="margin:15px; width: 316px; padding-top:10px; vertical-align:center;")
-            label#downloaded(style="width:300px")
+          div(style="display: block; width:100%; padding-top:0px;")
+            button#play(class="model-small-button" disabled style="color:LightGrey; font-size:small; background:grey;") &#x25BA;   
+            input#seekbar(type="range" value="0" style="margin:5px; width: 500px; text-align:center; vertical-align:top;")
+            label#downloaded(style="width:100px; font-size:xx-small")
 
   script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js")  
   script(src="/javascripts/main.js")

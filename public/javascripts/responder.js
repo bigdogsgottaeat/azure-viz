@@ -18,7 +18,12 @@ function playVideo(uri) {
     var videoPlayer = document.getElementById('vid1');
     var source = document.getElementById('vid1-source');
     var downloaded = document.getElementById('downloaded');
+    var play = document.getElementById('play');
+    var seekBar = document.getElementById('seekbar');
     
+    seekBar.value = 0;
+    downloaded.innerHTML = 'Loading...';
+
     videoPlayer.onprogress = function() {
         var end = 0;
       
@@ -29,21 +34,54 @@ function playVideo(uri) {
         var progress = end / videoPlayer.duration;
         progress = isNaN(progress) ? 0 : progress;
 
-       downloaded.innerHTML = videoPlayer.buffered.end(0);
+        downloaded.innerHTML = videoPlayer.buffered.end(0);
 
     };
+
+
+    videoPlayer.addEventListener("timeupdate", function() {
+        var value = (100 / videoPlayer.duration) * videoPlayer.currentTime;
+        seekBar.value = value;
+    });
+
+    play.style.textAlign  = 'left';
+    play.style.marginTop = '3px';
 
     videoPlayer.onloadstart = function() {
-        alert('onloadstart ');
-    };
+        play.disabled = true;
+        play.style.backgroundColor = 'grey';
+        play.style.color = 'LightGrey';
+        play.style.fontSize = 'small';
+        play.innerHTML = '&#x25BA;';  
+        
+   };
 
     videoPlayer.oncanplaythrough = function() {
-        alert('oncanplaythrough ');
+        play.disabled = false;
+        play.style.backgroundColor = 'rgb(0, 122, 204)';
+        play.style.color = 'white';
+        play.innerHTML = '&#x2590;&#x2590;';
+        play.style.fontSize = 'xx-small';
+        play.style.paddingLeft = '4px'
+        videoPlayer.play();        
+    };
+
+    play.onclick = function() {
+
+        if (videoPlayer.paused == true) {      
+            videoPlayer.play();
+            play.innerHTML = '&#x2590;&#x2590;';
+            play.style.fontSize = 'xx-small';
+            play.style.paddingLeft = '4px'
+         } else {
+            videoPlayer.pause();
+            play.style.paddingLeft = '6px'
+            play.innerHTML = '&#x25BA;';           
+            play.style.fontSize = 'small';
+        }
     };
 
     videoPlayer.addEventListener('play', function() { 
-   //     var play = document.getElementById('play');
-    //    play.innerHTML = '<span id="pauseButton">&#x2590;&#x2590;</span>';
     }, false); 
 
 

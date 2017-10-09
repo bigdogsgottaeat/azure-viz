@@ -106,7 +106,10 @@ $(document).ready(function() {
             var playVideoDialog = document.getElementById('playVideoDialog');
         
             playVideoDialog.style.display = "none";
-          
+
+            var videoPlayer = document.getElementById('vid1');
+            videoPlayer.pause();      
+
         }
 
     }
