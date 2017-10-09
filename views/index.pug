@@ -18,7 +18,7 @@ block content
     div.statusbar
 
     div#waitDialog(class="modal")
-      div(style="position:fixed; text-align: center; top:300px; left:42%;")
+      div(style="position:fixed; text-align: center; top:300px; left:44%;")
          div.loader
 
     div#uploadDialog(class="modal")
@@ -37,14 +37,18 @@ block content
             button#upload(class="modal-btn" disabled style="color:LightGrey; background:grey") Upload   
    
     div#playVideoDialog(class="modal")
-      div(class="modal-content")
+      div(class="modal-content" style="width:695px")
         div(class="modal-header")
           span(class="close") &times;
-          h2 Video Upload
+          h2 Video Player
         div(class="modal-body")        
-          div(style="width: 70%; display:inline-block;")
-            video(id="vid1" width="680" height="360" controls)
-              source(id="vid1-source" src="http://sample-videos.com/video/mp4/720/big_buck_bunny_720p_1mb.mp4" type="video/mp4")
-   
+          div(style="display:inline-block;")
+            video(id="vid1" width="643px" height="362px" preload="auto")
+              source(id="vid1-source" type="video/mp4")
+          div(style="display: block; width:100%; padding-top:8px;")
+            button#play(class="model-small-button" disabled style="color:LightGrey; background:grey;") &#x25BA;   
+            input#seekbar(type="range" value="0" style="margin:15px; width: 316px; padding-top:10px; vertical-align:center;")
+            label#downloaded(style="width:300px")
+
   script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js")  
   script(src="/javascripts/main.js")

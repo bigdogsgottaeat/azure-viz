@@ -90,7 +90,17 @@
     font-weight: bold;
   }
 
-.modal-entry {
+.model-small-button {
+    width: 24px;
+    height: 24px;
+    padding-bottom: 1px;
+    border-radius: 50%;
+    border: none;
+    overflow: hidden;
+    background: rgb(69, 89, 102);
+  }
+
+  .modal-entry {
      width: 100%; /* Full width */
      height: 20px;
      margin-bottom: 12px;

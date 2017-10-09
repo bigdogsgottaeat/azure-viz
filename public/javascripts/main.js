@@ -50,7 +50,7 @@ $(function() {
                      });   
                      
                      document.getElementById('waitDialog').style.display = "none";
-                     
+
                 },
                 xhr: function() {
                     var xhr = $.ajaxSettings.xhr();
@@ -94,14 +94,21 @@ $(document).ready(function() {
         $('#mainbox').html(data);
       });
 
-    var spanClose = document.getElementsByClassName("close")[0];
-      
-    spanClose.onclick = function() 
-    {
-        var uploadDialog = document.getElementById('uploadDialog');
+    for (var iSpanClose in document.getElementsByClassName("close")) {
+        var spanClose =  document.getElementsByClassName("close")[iSpanClose];
+
+        spanClose.onclick = function() 
+        {
+            var uploadDialog = document.getElementById('uploadDialog');
         
-        uploadDialog.style.display = "none";
+            uploadDialog.style.display = "none";
+
+            var playVideoDialog = document.getElementById('playVideoDialog');
+        
+            playVideoDialog.style.display = "none";
           
+        }
+
     }
 
 });
