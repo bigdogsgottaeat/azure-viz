@@ -21,9 +21,13 @@ function playVideo(uri) {
     var play = document.getElementById('play');
     var seekBar = document.getElementById('seekbar');
     
+    document.getElementById('playerWait').style.display = 'inline-block';
+    document.getElementById('player').style.display = 'none';
+    
     seekBar.value = 0;
     downloaded.innerHTML = 'Loading...';
-
+    downloaded.classList.paddingTop = '5px';
+    
     videoPlayer.onprogress = function() {
         var end = 0;
       
@@ -52,8 +56,7 @@ function playVideo(uri) {
         play.style.backgroundColor = 'grey';
         play.style.color = 'LightGrey';
         play.style.fontSize = 'small';
-        play.innerHTML = '&#x25BA;';  
-        
+        play.innerHTML = '&#x25BA;';         
    };
 
     videoPlayer.oncanplaythrough = function() {
@@ -63,6 +66,10 @@ function playVideo(uri) {
         play.innerHTML = '&#x2590;&#x2590;';
         play.style.fontSize = 'xx-small';
         play.style.paddingLeft = '4px'
+
+        document.getElementById('playerWait').style.display = 'none';
+        document.getElementById('player').style.display = 'inline-block';        
+ 
         videoPlayer.play();        
     };
 

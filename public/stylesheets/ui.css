@@ -47,7 +47,6 @@ h1 {
   width: 310px;
   border: 1px solid gray;
   box-shadow: 1px 1px 3px #888888;
-  border-top: 10px solid green;
   height: 260px;
   padding: 10px;
   font-size: 9px;
@@ -113,4 +112,12 @@ h1 {
     height:40px;
   } 
 
-  
+  #playerWait { 
+    width:402px; 
+    height:368px; 
+    padding-left:240px; 
+    overflow:none;
+    background-color: #fefefe;    
+    border: 1px solid #CECECE;
+    box-shadow: 1px 1px 3px #F8F7F7;
+  }

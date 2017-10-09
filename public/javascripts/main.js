@@ -108,9 +108,14 @@ $(document).ready(function() {
             playVideoDialog.style.display = "none";
 
             var videoPlayer = document.getElementById('vid1');
-            videoPlayer.pause();      
+            videoPlayer.pause();  
+            
+            var source = document.getElementById('vid1-source');
+            source.setAttribute('src', '');
+            videoPlayer.load();
 
         }
+
 
     }
 
