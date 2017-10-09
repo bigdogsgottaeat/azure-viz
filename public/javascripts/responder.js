@@ -50,6 +50,7 @@ function playVideo(uri) {
 
     play.style.textAlign  = 'left';
     play.style.marginTop = '3px';
+    play.style.paddingLeft = '6px'   
 
     videoPlayer.onloadstart = function() {
         play.disabled = true;
