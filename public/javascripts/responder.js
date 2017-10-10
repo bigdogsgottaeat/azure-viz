@@ -2,6 +2,8 @@ function uploadVideo() {
     var modal = document.getElementById('uploadDialog');
     modal.style.display = "block";
 
+    document.getElementById("filename").value = "";
+
  }
 
  
