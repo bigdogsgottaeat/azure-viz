@@ -30,6 +30,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 var compiledCard = pug.compileFile('./views/card.pug')
 var blobSvc = azure.createBlobService('tsoblob1', 'ueeY47IjZthiit45wMvVzecnqnkxJnoz0EPfxLHA5gJNGBKRuF7RsBOPHrQ2Ou2QBFNbj+RqP+k89srwPssDaQ==');      
 var tableSvc = azure.createTableService('tsoblob1', 'ueeY47IjZthiit45wMvVzecnqnkxJnoz0EPfxLHA5gJNGBKRuF7RsBOPHrQ2Ou2QBFNbj+RqP+k89srwPssDaQ==');      
+var indexerSvc = new vindexer('55fdf694c6844b27996f06384fa210b8');
+
+var thumbnailUrlMap = {};
 
 // development only
 if ('development' == app.get('env')) {
@@ -44,11 +47,21 @@ app.all('/retrieve', function(req, res, next) {
 
      for (var iBlob in result.entries) {
 
+      var imageUrl = '/icons/video.svg';
+      if (!thumbnailUrlMap[result.entries[iBlob].name]) {
+         getImage(result.entries[iBlob].name);
+      } else {
+        imageUrl = thumbnailUrlMap[result.entries[iBlob].name];
+      }
+
+      console.log('Image Url: ' + imageUrl);
+
       cards += compiledCard({
         name: result.entries[iBlob].name,
         createTime: result.entries[iBlob].lastModified,
         userName:'Alex De Gruiter',
-        id: 'https://tsoblob1.blob.core.windows.net/videos/' + result.entries[iBlob].name 
+        id: 'https://tsoblob1.blob.core.windows.net/videos/' + result.entries[iBlob].name,
+        imageUrl: imageUrl
       });
 
      }
@@ -75,6 +88,14 @@ app.post('/upload', function (req, res, next) {
 
       console.log("Name: '" + name + "' - [" + size + "] - uploading");
       
+      blobSvc.createContainerIfNotExists('videos', {
+          publicAccessLevel: 'blob'
+        }, function(error, result, response) {
+          if (!error) {
+            console.log('Container: \'videos\' - created');         
+          }
+        });
+
       blobSvc.createBlockBlobFromStream('videos', name, part, size, function (error) {
         if (!error) {
           console.log('File: \'' + name + '\' -  [' + size + '] - uploaded');
@@ -113,9 +134,8 @@ http.createServer(app).listen(app.get('port'), function() {
 });
 
 function indexVideo(name, size) {
-  const Vindexer = new vindexer('68ed73966e9d4d99a8bc4e8cc8f7753d');  
   
-  Vindexer.uploadVideo({
+  indexerSvc.uploadVideo({
         // Optional
         videoUrl: 'https://tsoblob1.blob.core.windows.net/videos/' + name,
         name:  name,
@@ -145,6 +165,51 @@ function indexVideo(name, size) {
         });
 
     });
+
   });
+
+}
+  
+function getImage(name) {
+
+  tableSvc.createTableIfNotExists('vizvideos', function(error, result, response) {                
+      
+  tableSvc.retrieveEntity('vizvideos', 'part1', name, function(error, result, response) {
+        if (!error) {
+          var entity = result;
+
+          if (entity.thumbnailUrl._) {
+            thumbnailUrlMap[name] = entity.thumbnailUrl._;
+            console.log("Map: '" + name + "' : '" + entity.thumbnailUrl._ + "'- updated");
+            
+            return;
+          }
+          
+          indexerSvc.getBreakdown(entity.VideoId._.replace(/\"/g, ''))
+              .then( function(result) {             
+              var breakdown = JSON.parse(result.body);
+
+              console.log(breakdown.summarizedInsights.thumbnailUrl);
+
+              var entGen = azure.TableUtilities.entityGenerator;
+              
+              entity.thumbnailUrl = entGen.String(breakdown.summarizedInsights.thumbnailUrl);
+              
+              tableSvc.replaceEntity('vizvideos', entity, function(error, result, response) {
+              
+                if (error) {
+                  console.log('Replace: ' + error);
+                } else {
+                  console.log("Entity: '" + entity.RowKey._ + "' + '" + breakdown.summarizedInsights.thumbnailUrl + "'- replaced");
+                }    
+              });
+
+           });
+
+        }
+
+      });
+
+    });
 
 }
