@@ -39,32 +39,33 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
+app.all('search', function(req, res, next) {
+  console.log('Search: ' + req);
+  
+  indexerSvc.search({
+          // Optional 
+          privacy: 'Private',
+          query: arg,
+          pageSize: 10,
+          searchInPublicAccount: false
+  }) .then( function(result) { 
+            console.log (result.body);
+            res.send(result.body);         
+  });
+
+});
+
 app.all('/retrieve', function(req, res, next) {
   
   var cards = "";
   
   blobSvc.listBlobsSegmented('videos', null, function(error, result, response) {
 
-     for (var iBlob in result.entries) {
+    for (var iBlob in result.entries) {
 
-      var imageUrl = '/icons/video.svg';
-      if (!thumbnailUrlMap[result.entries[iBlob].name]) {
-         getImage(result.entries[iBlob].name);
-      } else {
-        imageUrl = thumbnailUrlMap[result.entries[iBlob].name];
-      }
+      cards += createCard(result.entries[iBlob]);
 
-      console.log('Image Url: ' + imageUrl);
-
-      cards += compiledCard({
-        name: result.entries[iBlob].name,
-        createTime: result.entries[iBlob].lastModified,
-        userName:'Alex De Gruiter',
-        id: 'https://tsoblob1.blob.core.windows.net/videos/' + result.entries[iBlob].name,
-        imageUrl: imageUrl
-      });
-
-     }
+    }
      
      res.send(cards);
      
@@ -169,7 +170,30 @@ function indexVideo(name, size) {
   });
 
 }
-  
+
+function createCard(video) {
+
+  var imageUrl = '/icons/video.svg';
+  if (!thumbnailUrlMap[video.name]) {
+     getImage(video.name);
+  } else {
+    imageUrl = thumbnailUrlMap[video.name];
+  }
+
+  console.log('Image Url: ' + imageUrl);
+
+  var card = compiledCard({
+    name: video.name,
+    createTime: video.lastModified,
+    userName:'Alex De Gruiter',
+    id: 'https://tsoblob1.blob.core.windows.net/videos/' + video.name,
+    imageUrl: imageUrl
+  });
+
+  return card;
+
+}
+
 function getImage(name) {
 
   tableSvc.createTableIfNotExists('vizvideos', function(error, result, response) {                
@@ -178,7 +202,7 @@ function getImage(name) {
         if (!error) {
           var entity = result;
 
-          if (entity.thumbnailUrl._) {
+          if (entity.thumbnailUrl) {
             thumbnailUrlMap[name] = entity.thumbnailUrl._;
             console.log("Map: '" + name + "' : '" + entity.thumbnailUrl._ + "'- updated");
             

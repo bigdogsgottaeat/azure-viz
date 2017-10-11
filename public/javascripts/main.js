@@ -4,7 +4,7 @@ $(function() {
     
         if (e.keyCode == 13) {
             var parameters = {filter:'all'};
-            $.get('/retrieve', parameters, function(data) {
+            $.get('/search', parameters, function(data) {
                 $('#mainbox').html(data);
              });
         }        
