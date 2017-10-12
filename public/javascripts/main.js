@@ -1,9 +1,15 @@
 $(function() {
 
+    $('#search').on('click', function(e) {
+        $.get('/search', parameters, function(data) {
+            $('#mainbox').html(data);
+         });    
+    });
+
     $('#criteria').on('keyup', function(e) {
     
         if (e.keyCode == 13) {
-            var parameters = {filter:'all'};
+            var parameters = {filter:$('#criteria').val()};
             $.get('/search', parameters, function(data) {
                 $('#mainbox').html(data);
              });
@@ -68,7 +74,7 @@ $(function() {
 
                     var notification = new Notification("Error in uploaded", {
                         dir: "auto",
-                        langg: "",
+                        lang: "",
                         body: "Error in uploading file",
                         tag: "Upload Error"
                 });

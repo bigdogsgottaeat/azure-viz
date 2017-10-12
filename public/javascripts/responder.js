@@ -13,7 +13,7 @@ function uploadVideo() {
    * @param {String} uri
    * @api private
    */
-function playVideo(uri) {
+function playVideo(uri) {  
     var modal = document.getElementById('playVideoDialog');
     modal.style.display = "block";
 
@@ -44,10 +44,19 @@ function playVideo(uri) {
 
     };
 
-
     videoPlayer.addEventListener("timeupdate", function() {
         var value = (100 / videoPlayer.duration) * videoPlayer.currentTime;
         seekBar.value = value;
+    });
+
+    seekBar.addEventListener("change", function() {
+        var time = videoPlayer.duration * (seekBar.value / 100);
+      
+        videoPlayer.currentTime = time;
+        play.style.paddingLeft = '6px'
+        play.innerHTML = '&#x25BA;';           
+        play.style.fontSize = 'small';
+
     });
 
     play.style.textAlign  = 'left';

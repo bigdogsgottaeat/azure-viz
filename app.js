@@ -12,6 +12,8 @@ var pug = require('pug');
 var multiparty = require('multiparty');
 var os = require('os');
 var vindexer = require("video-indexer");
+var async = require('async');
+var async = require('node-mutex');
 
 var app = express();
 
@@ -31,44 +33,79 @@ var compiledCard = pug.compileFile('./views/card.pug')
 var blobSvc = azure.createBlobService('tsoblob1', 'ueeY47IjZthiit45wMvVzecnqnkxJnoz0EPfxLHA5gJNGBKRuF7RsBOPHrQ2Ou2QBFNbj+RqP+k89srwPssDaQ==');      
 var tableSvc = azure.createTableService('tsoblob1', 'ueeY47IjZthiit45wMvVzecnqnkxJnoz0EPfxLHA5gJNGBKRuF7RsBOPHrQ2Ou2QBFNbj+RqP+k89srwPssDaQ==');      
 var indexerSvc = new vindexer('55fdf694c6844b27996f06384fa210b8');
+var entGen = azure.TableUtilities.entityGenerator;
 
-var thumbnailUrlMap = {};
+var videos = {};
 
 // development only
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-app.all('search', function(req, res, next) {
-  console.log('Search: ' + req);
+app.get('/search:filter?', function(req, res, next) {
+
+  var filter = req.param('filter')
+
+  console.log('Search: '  + filter);
   
   indexerSvc.search({
           // Optional 
           privacy: 'Private',
-          query: arg,
+          query:filter,
           pageSize: 10,
           searchInPublicAccount: false
   }) .then( function(result) { 
-            console.log (result.body);
-            res.send(result.body);         
-  });
+            var resultBreakdown = JSON.parse(result.body); 
+            var iCard = 1;
+            var cards =   "";
+            
+            for (var iResult in resultBreakdown.results) {       
+              mutex.lock('card', function(err, unlock) {
+                console.log('result-name:' + resultBreakdown.results[iResult].name);
+
+                createCard(resultBreakdown.results[iResult].name, results, function(card) {
+                  if (iCard == resultBreakdown.results.length) {
+                    res.send(cards);
+                  }
+
+                });
+
+              });
+
+              unlock();
+
+            }
+      
+   });
 
 });
 
 app.all('/retrieve', function(req, res, next) {
-  
-  var cards = "";
-  
+ 
   blobSvc.listBlobsSegmented('videos', null, function(error, result, response) {
+    var cards = "";
+    
+    if (result.entries.length == 0) {
+      res.send();
+    }
 
-    for (var iBlob in result.entries) {
+    var iCard = 0;
+    for (var iEntry in result.entries) {
 
-      cards += createCard(result.entries[iBlob]);
+      createCard(result.entries[iEntry].name, null, function(card) {
+
+        
+        cards += card;
+        iCard += 1;
+
+        if (iCard == result.entries.length) {
+          res.send(cards);
+        }
+
+      });
 
     }
-     
-     res.send(cards);
-     
+          
   });
 
 });
@@ -89,27 +126,16 @@ app.post('/upload', function (req, res, next) {
 
       console.log("Name: '" + name + "' - [" + size + "] - uploading");
       
-      blobSvc.createContainerIfNotExists('videos', {
-          publicAccessLevel: 'blob'
-        }, function(error, result, response) {
-          if (!error) {
-            console.log('Container: \'videos\' - created');         
-          }
-        });
+      streamVideo(name, part, size, function(error) {
 
-      blobSvc.createBlockBlobFromStream('videos', name, part, size, function (error) {
         if (!error) {
-          console.log('File: \'' + name + '\' -  [' + size + '] - uploaded');
-          res.send('File: \'' + name + '\' - uploaded');
-          
-          indexVideo(name, size);
-             
-       } else {
+          res.send('Video: \'' + name + '[' + size + '] - uploaded')
+        } else {
           console.log('Error: ' + error);          
           res.send({'Error': error});
         }
 
-      })
+      });
 
     } else {
       form.handlePart(part);
@@ -134,7 +160,32 @@ http.createServer(app).listen(app.get('port'), function() {
   console.log('Express server listening on port: \'' + app.get('port') +'\'');
 });
 
-function indexVideo(name, size) {
+
+function streamVideo(name, part, size, callback) {
+  
+  blobSvc.createContainerIfNotExists('videos', {
+       publicAccessLevel: 'blob'
+    }, 
+    function(error, result, response) {
+   
+      blobSvc.createBlockBlobFromStream('videos', name, part, size, function (error) {
+      
+        if (!error) {      
+          indexVideo(name, size, function(error, video) {
+            callback(error); 
+          });
+  
+        } else {
+            callback(error); 
+        } 
+  
+      });        
+  
+   });
+  
+}
+  
+function indexVideo(name, size, callback) {
   
   indexerSvc.uploadVideo({
         // Optional
@@ -148,21 +199,26 @@ function indexVideo(name, size) {
       console.log('File: \'' + name + '\' -  [' + size + '] - {' + videoId + '} - indexed');
         
       tableSvc.createTableIfNotExists('vizvideos', function(error, result, response) {                
-        var entGen = azure.TableUtilities.entityGenerator;
-
-        var entity = {
+ 
+        var video = {
           PartitionKey: entGen.String('part1'),                    
           RowKey: entGen.String(name),
           VideoId: entGen.String(videoId),
-          Size: entGen.Int64(size)
+          Size: entGen.Int64(size),
         };
-          
-        tableSvc.insertEntity('vizvideos', entity, function(error, result, response) {
+
+        tableSvc.insertEntity('vizvideos', video, function(error, result, response) {
           if (error) {
             console.log('Insert: ' + error);
           } else {
-            console.log("Entity: '" + name + "' - [" + size + "] - {" + videoId + "} - registered");
+            videos[name] = video;
+            
+            console.log("Entity: '" + name + "' - [" + size + "] - {" + videoId + "} - registered - " + result);
+
           }
+
+          callback(error, video);
+
         });
 
     });
@@ -171,69 +227,122 @@ function indexVideo(name, size) {
 
 }
 
-function createCard(video) {
+function createCard(name, result, callback) {
 
-  var imageUrl = '/icons/video.svg';
-  if (!thumbnailUrlMap[video.name]) {
-     getImage(video.name);
+  if (!videos[name] || !(videos[name].thumbnailUrl)) {
+     
+    getMetadata(name, result, function(video) {
+
+    buildCard(video, callback);
+    
+   })
+
   } else {
-    imageUrl = thumbnailUrlMap[video.name];
+    
+    buildCard(videos[name], callback);
+    
   }
-
-  console.log('Image Url: ' + imageUrl);
-
-  var card = compiledCard({
-    name: video.name,
-    createTime: video.lastModified,
-    userName:'Alex De Gruiter',
-    id: 'https://tsoblob1.blob.core.windows.net/videos/' + video.name,
-    imageUrl: imageUrl
-  });
-
-  return card;
 
 }
 
-function getImage(name) {
+function buildCard(video, callback) {
 
-  tableSvc.createTableIfNotExists('vizvideos', function(error, result, response) {                
+  callback(compiledCard({
+    name: video.RowKey._,
+    createTime: (video.Timestamp) ? video.Timestamp._ : '...',
+    userName:'<unknown>',
+    id: 'https://tsoblob1.blob.core.windows.net/videos/' + video.RowKey._,
+    imageUrl: video.thumbnailUrl._
+  }));
+
+}
+
+function getMetadata(name, result, callback) {
+
+  var video = null;
+  
+  tableSvc.createTableIfNotExists('vizvideos', function(error, result, response) {            
+
+    tableSvc.retrieveEntity('vizvideos', 'part1', name, function(error, result, response) {  
+     
+      if (!error) {
+ 
+        video = result;
+        
+        videos[name] = video;
       
-  tableSvc.retrieveEntity('vizvideos', 'part1', name, function(error, result, response) {
-        if (!error) {
-          var entity = result;
-
-          if (entity.thumbnailUrl) {
-            thumbnailUrlMap[name] = entity.thumbnailUrl._;
-            console.log("Map: '" + name + "' : '" + entity.thumbnailUrl._ + "'- updated");
-            
-            return;
-          }
+        if (video.thumbnailUrl) {
+           callback(video);            
+        } else {
+          console.log('Video: \'' + name + '\'');          
+          var videoId = JSON.parse(video.VideoId._);
+          console.log('PropName: ' + videoId.statusCode);
           
-          indexerSvc.getBreakdown(entity.VideoId._.replace(/\"/g, ''))
-              .then( function(result) {             
-              var breakdown = JSON.parse(result.body);
-
-              console.log(breakdown.summarizedInsights.thumbnailUrl);
-
-              var entGen = azure.TableUtilities.entityGenerator;
-              
-              entity.thumbnailUrl = entGen.String(breakdown.summarizedInsights.thumbnailUrl);
-              
-              tableSvc.replaceEntity('vizvideos', entity, function(error, result, response) {
-              
-                if (error) {
-                  console.log('Replace: ' + error);
-                } else {
-                  console.log("Entity: '" + entity.RowKey._ + "' + '" + breakdown.summarizedInsights.thumbnailUrl + "'- replaced");
-                }    
-              });
-
-           });
+          video.thumbnailUrl = entGen.String('/icons/video.svg');
+          
+          if (!videoId.statusCode && !video.ErrorType) {  
+            callback(video);          
+            getIndexMetadata(video);
+          } else {
+            callback(video);     
+            reindexVideo(name, video);               
+          }
 
         }
 
-      });
+      }
 
     });
+
+  });
+
+}
+
+function reindexVideo(name, video) {
+  
+  indexerSvc.uploadVideo({
+        // Optional
+        videoUrl: 'https://tsoblob1.blob.core.windows.net/videos/' + name,
+        name:  name,
+        externalId: name
+  })
+    .then( function(result) { 
+      console.log("Video: '" + name + "' - reindexed");
+      
+      video.VideoId = entGen.String( result.body);
+      getIndexMetadata(video)
+      
+  });
+
+}
+
+function getIndexMetadata(video) {
+ 
+  indexerSvc.getBreakdown(JSON.parse(video.VideoId._))
+      .then( function(result) {      
+    console.log('Breakdown Id: ' + video.VideoId._);
+    
+    try {
+     var breakdown = JSON.parse(result.body);
+    } catch (e) {
+      console.log('Breakdown [JSON.parse]: ' + e);
+      return;
+    }
+
+    video.thumbnailUrl = entGen.String(breakdown.summarizedInsights.thumbnailUrl);
+    video.userName = entGen.String(breakdown.summarizedInsights.userName);
+    video.createTime = entGen.String(breakdown.summarizedInsights.createTime);
+      
+    tableSvc.replaceEntity('vizvideos', video, function(error, result, response) {
+        
+      if (error) {
+        console.log('Replace: ' + error);
+      } else {
+        console.log("Video: '" + video.RowKey._ + "' - replaced");
+      }  
+
+    });
+
+  });
 
 }
