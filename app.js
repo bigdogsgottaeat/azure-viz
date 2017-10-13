@@ -12,8 +12,6 @@ var pug = require('pug');
 var multiparty = require('multiparty');
 var os = require('os');
 var vindexer = require("video-indexer");
-var async = require('async');
-var async = require('node-mutex');
 
 var app = express();
 
@@ -60,19 +58,15 @@ app.get('/search:filter?', function(req, res, next) {
             var cards =   "";
             
             for (var iResult in resultBreakdown.results) {       
-              mutex.lock('card', function(err, unlock) {
-                console.log('result-name:' + resultBreakdown.results[iResult].name);
+              console.log('result-name:' + resultBreakdown.results[iResult].name);
 
-                createCard(resultBreakdown.results[iResult].name, results, function(card) {
-                  if (iCard == resultBreakdown.results.length) {
-                    res.send(cards);
-                  }
-
-                });
+              createCard(resultBreakdown.results[iResult].name, results, function(card) {
+              
+                if (iCard == resultBreakdown.results.length) {
+                  res.send(cards);
+                }
 
               });
-
-              unlock();
 
             }
       
@@ -80,21 +74,36 @@ app.get('/search:filter?', function(req, res, next) {
 
 });
 
+app.get('/delete:videoId?', function(req, res, next) {
+});
+  
 app.all('/retrieve', function(req, res, next) {
  
   blobSvc.listBlobsSegmented('videos', null, function(error, result, response) {
-    var cards = "";
-    
+ 
+    if (!result) {
+      blobSvc.createContainerIfNotExists('videos', {
+         publicAccessLevel: 'blob'
+      }, 
+        function(error, result, response) {
+      });
+      
+      res.send();
+      return;
+    }
+
     if (result.entries.length == 0) {
       res.send();
+      return;
     }
 
     var iCard = 0;
+    var cards = "";
+
     for (var iEntry in result.entries) {
 
       createCard(result.entries[iEntry].name, null, function(card) {
-
-        
+          
         cards += card;
         iCard += 1;
 
@@ -119,9 +128,7 @@ app.post('/upload', function (req, res, next) {
   .on('part', function(part) {
 
     if (part.filename) {
-      files.push(part.filename);
-
-      var size = part.byteCount - part.byteOffset;
+      var size = part.byteCount;
       var name = part.filename;
 
       console.log("Name: '" + name + "' - [" + size + "] - uploading");
@@ -129,7 +136,7 @@ app.post('/upload', function (req, res, next) {
       streamVideo(name, part, size, function(error) {
 
         if (!error) {
-          res.send('Video: \'' + name + '[' + size + '] - uploaded')
+          res.send('Video: \'' + name + ' - uploaded')
         } else {
           console.log('Error: ' + error);          
           res.send({'Error': error});
@@ -147,7 +154,7 @@ app.post('/upload', function (req, res, next) {
     res.send(err)
   })
   .on('end', function() {
-    res.end('received all files');    
+    res.end('Received all files');    
   });
 
   form.parse(req);
@@ -171,12 +178,12 @@ function streamVideo(name, part, size, callback) {
       blobSvc.createBlockBlobFromStream('videos', name, part, size, function (error) {
       
         if (!error) {      
-          indexVideo(name, size, function(error, video) {
+            indexVideo(name, size, function(error, video) {
             callback(error); 
           });
   
         } else {
-            callback(error); 
+          callback(error); 
         } 
   
       });        
@@ -213,7 +220,7 @@ function indexVideo(name, size, callback) {
           } else {
             videos[name] = video;
             
-            console.log("Entity: '" + name + "' - [" + size + "] - {" + videoId + "} - registered - " + result);
+            console.log("Entity: '" + name + "' - [" + size + "] - {" + videoId + "} - registered" - " + result");
 
           }
 
@@ -252,7 +259,8 @@ function buildCard(video, callback) {
     createTime: (video.Timestamp) ? video.Timestamp._ : '...',
     userName:'<unknown>',
     id: 'https://tsoblob1.blob.core.windows.net/videos/' + video.RowKey._,
-    imageUrl: video.thumbnailUrl._
+    imageUrl: video.thumbnailUrl._.toString().endsWith('000000000000') ? '/icons/missing-image.svg' :
+              video.thumbnailUrl._
   }));
 
 }
@@ -272,15 +280,15 @@ function getMetadata(name, result, callback) {
         videos[name] = video;
       
         if (video.thumbnailUrl) {
+
            callback(video);            
-        } else {
-          console.log('Video: \'' + name + '\'');          
-          var videoId = JSON.parse(video.VideoId._);
-          console.log('PropName: ' + videoId.statusCode);
+        
+       } else {
+           var videoId = JSON.parse(video.VideoId._);
+         
+          video.thumbnailUrl = entGen.String('/icons/processing-image.svg');
           
-          video.thumbnailUrl = entGen.String('/icons/video.svg');
-          
-          if (!videoId.statusCode && !video.ErrorType) {  
+          if (!videoId.statusCode && !videoId.ErrorType) {
             callback(video);          
             getIndexMetadata(video);
           } else {
@@ -307,10 +315,20 @@ function reindexVideo(name, video) {
         externalId: name
   })
     .then( function(result) { 
-      console.log("Video: '" + name + "' - reindexed");
+   
+      var videoId = JSON.parse(result.body);
+
+      if (!videoId.statusCode && !videoId.ErrorType) {       
       
-      video.VideoId = entGen.String( result.body);
-      getIndexMetadata(video)
+        console.log("Video: '" + name + "' - reindexed - [" + result.body + "]");
+      
+        getIndexMetadata(video);
+      
+      } else {
+   
+        console.log("Video: '" + name + "' - reindexed (ERROR) - [" + result.body + "]");
+        
+      }
       
   });
 
@@ -320,12 +338,17 @@ function getIndexMetadata(video) {
  
   indexerSvc.getBreakdown(JSON.parse(video.VideoId._))
       .then( function(result) {      
-    console.log('Breakdown Id: ' + video.VideoId._);
     
+ 
     try {
      var breakdown = JSON.parse(result.body);
     } catch (e) {
       console.log('Breakdown [JSON.parse]: ' + e);
+      return;
+    }
+   
+    if (breakdown.ErrorType) {
+      console.log('Index Metadata - Error: \'' + breakdown.ErrorType + '\'');
       return;
     }
 
