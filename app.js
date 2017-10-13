@@ -220,7 +220,7 @@ function indexVideo(name, size, callback) {
           } else {
             videos[name] = video;
             
-            console.log("Entity: '" + name + "' - [" + size + "] - {" + videoId + "} - registered" - " + result");
+            console.log("Entity: '" + name + "' - {" + videoId + "} - registered" - " + result");
 
           }
 
