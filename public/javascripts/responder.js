@@ -117,11 +117,15 @@ function playVideo(uri) {
    */
 function requestSearch() {
    var parameters = {filter:'all'};
-        
+
+   document.getElementById('waitDialog').style.display = "block";
+     
     $.get('/retrieve', parameters, function(data) {
    
         $('#mainbox').html(data);
 
+        document.getElementById('waitDialog').style.display = "none";
+ 
      });
 
 }

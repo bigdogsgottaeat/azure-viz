@@ -1,8 +1,13 @@
 $(function() {
 
     $('#search').on('click', function(e) {
+        var parameters = {filter:$('#criteria').val()};
+ 
+        document.getElementById('waitDialog').style.display = "block";
+               
         $.get('/search', parameters, function(data) {
             $('#mainbox').html(data);
+            document.getElementById('waitDialog').style.display = "none";                            
          });    
     });
 
@@ -10,8 +15,12 @@ $(function() {
     
         if (e.keyCode == 13) {
             var parameters = {filter:$('#criteria').val()};
+ 
+            document.getElementById('waitDialog').style.display = "block";
+ 
             $.get('/search', parameters, function(data) {
                 $('#mainbox').html(data);
+                document.getElementById('waitDialog').style.display = "none";                
              });
         }        
 
@@ -53,10 +62,9 @@ $(function() {
                     var parameters = {filter:'all'};
                     $.get('/retrieve', parameters, function(data) {
                         $('#mainbox').html(data);
+                        document.getElementById('waitDialog').style.display = "none";                        
                      });   
                      
-                     document.getElementById('waitDialog').style.display = "none";
-
                 },
                 xhr: function() {
                     var xhr = $.ajaxSettings.xhr();

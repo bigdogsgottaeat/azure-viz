@@ -44,6 +44,11 @@ app.get('/search:filter?', function(req, res, next) {
 
   var filter = req.param('filter')
 
+  if (filter.length == 0) {
+    retrieveVideos(req, res, next);
+    return;
+  }
+
   console.log('Search: '  + filter);
   
   indexerSvc.search({
@@ -55,16 +60,26 @@ app.get('/search:filter?', function(req, res, next) {
   }) .then( function(result) { 
             var resultBreakdown = JSON.parse(result.body); 
             var iCard = 1;
-            var cards =   "";
+            var cards =  "";
             
-            for (var iResult in resultBreakdown.results) {       
-              console.log('result-name:' + resultBreakdown.results[iResult].name);
+            if (resultBreakdown.results.length == 0) {
+              res.send();
+              return;
+            }
 
-              createCard(resultBreakdown.results[iResult].name, results, function(card) {
-              
+            for (var iResult in resultBreakdown.results) {       
+ 
+              createCard(resultBreakdown.results[iResult].name, resultBreakdown.results[iResult], function(error, card) {               
+                
+                if (!error) {
+                  cards += card;
+                }
+                
                 if (iCard == resultBreakdown.results.length) {
                   res.send(cards);
                 }
+
+                iCard += 1;
 
               });
 
@@ -78,44 +93,8 @@ app.get('/delete:videoId?', function(req, res, next) {
 });
   
 app.all('/retrieve', function(req, res, next) {
- 
-  blobSvc.listBlobsSegmented('videos', null, function(error, result, response) {
- 
-    if (!result) {
-      blobSvc.createContainerIfNotExists('videos', {
-         publicAccessLevel: 'blob'
-      }, 
-        function(error, result, response) {
-      });
-      
-      res.send();
-      return;
-    }
 
-    if (result.entries.length == 0) {
-      res.send();
-      return;
-    }
-
-    var iCard = 0;
-    var cards = "";
-
-    for (var iEntry in result.entries) {
-
-      createCard(result.entries[iEntry].name, null, function(card) {
-          
-        cards += card;
-        iCard += 1;
-
-        if (iCard == result.entries.length) {
-          res.send(cards);
-        }
-
-      });
-
-    }
-          
-  });
+  retrieveVideos(req, res, next);
 
 });
 
@@ -192,6 +171,54 @@ function streamVideo(name, part, size, callback) {
   
 }
   
+function retrieveVideos(req, res, next) {
+  
+  blobSvc.listBlobsSegmented('videos', null, function(error, result, response) {
+    var entries = result.entries;
+    
+    if (!result) {
+      blobSvc.createContainerIfNotExists('videos', {
+        publicAccessLevel: 'blob'
+        }, 
+        function(error, result, response) {
+        });
+         
+        res.send();
+        return;
+
+    } else {
+   
+      if (result.entries.length == 0) {
+        res.send();
+        return;
+      }
+   
+      var iCard = 0;
+      var cards = "";
+   
+      for (var iEntry in result.entries) {
+   
+        createCard(result.entries[iEntry].name, null, function(error, card) {
+             
+          if (!error) {
+            cards += card;
+          }
+   
+          iCard += 1;
+   
+          if (iCard == result.entries.length) {
+            res.send(cards);
+          }
+   
+        });
+   
+      }
+
+    }   
+
+  });
+   
+}
 function indexVideo(name, size, callback) {
   
   indexerSvc.uploadVideo({
@@ -238,9 +265,13 @@ function createCard(name, result, callback) {
 
   if (!videos[name] || !(videos[name].thumbnailUrl)) {
      
-    getMetadata(name, result, function(video) {
-
-    buildCard(video, callback);
+    getMetadata(name, result, function(error, video) {
+    
+    if (!error) {
+      buildCard(video, callback);
+    } else {
+      callback(error, null);
+    }
     
    })
 
@@ -254,7 +285,7 @@ function createCard(name, result, callback) {
 
 function buildCard(video, callback) {
 
-  callback(compiledCard({
+  callback(false, compiledCard({
     name: video.RowKey._,
     createTime: (video.Timestamp) ? video.Timestamp._ : '...',
     userName:'<unknown>',
@@ -281,7 +312,7 @@ function getMetadata(name, result, callback) {
       
         if (video.thumbnailUrl) {
 
-           callback(video);            
+           callback(null, video);            
         
        } else {
            var videoId = JSON.parse(video.VideoId._);
@@ -289,15 +320,19 @@ function getMetadata(name, result, callback) {
           video.thumbnailUrl = entGen.String('/icons/processing-image.svg');
           
           if (!videoId.statusCode && !videoId.ErrorType) {
-            callback(video);          
+            callback(null, video);          
             getIndexMetadata(video);
           } else {
-            callback(video);     
+            callback(null, video);     
             reindexVideo(name, video);               
           }
 
         }
 
+      } else {
+
+        callback(error, null);
+      
       }
 
     });
