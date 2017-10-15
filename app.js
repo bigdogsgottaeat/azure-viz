@@ -49,8 +49,6 @@ app.get('/search:filter?', function(req, res, next) {
     return;
   }
 
-  console.log('Search: '  + filter);
-  
   indexerSvc.search({
           // Optional 
           privacy: 'Private',
