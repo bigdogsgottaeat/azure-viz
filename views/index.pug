@@ -8,10 +8,12 @@ block content
       div.layout 
         span.tool
           button.button(onclick="uploadVideo()")
-            img(src="/icons/add.svg" style="padding-top:8px; width:18px; height:18px; text-align:center;" alt="Home")
+            img(src="/icons/add.svg" style="padding-top:8px; width:18px; height:18px; text-align:center;" alt="Upload")
           input#criteria(name="citeria" style="vertical-align: top; margin-left: 5px; margin-top: 4px; margin-right:4px; height: 24px; width: 500px;" placeholder="Search Videos...")
           button.button(id="search")
-            img(src="/icons/magnifier.svg" style="padding-top:8px; width:17px; height:17px; text-align:center;" alt="Home")
+            img(src="/icons/magnifier.svg" style="padding-top:8px; width:17px; height:17px; text-align:center;" alt="Search")
+          button.button(id="refresh")
+            img(src="/icons/refresh-button.svg" style="padding-top:8px; width:17px; height:17px; text-align:center;" alt="Refresh")
      
     div.border(style="position:absolute; overflow:auto; top:52px; bottom:20px; left: 0px; right: 0px;")
       div.mainbox(id="mainbox")
@@ -52,6 +54,14 @@ block content
             button#play(class="model-small-button" disabled style="color:LightGrey; font-size:small; background:grey;") &#x25BA;   
             input#seekbar(type="range" value="0" style="margin:5px; width: 500px; text-align:center; vertical-align:top;")
             label#downloaded(style="width:100px; height:24px; font-size:xx-small")
+
+    div#deleteDialog(class="modal")
+      div(class="modal-content" style="width:684px; height:500px;")
+        div(class="modal-header")
+          span(class="close") &times;
+          h2 Delete Video
+        div(class="modal-body")        
+
 
   script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js")  
   script(src="/javascripts/main.js")

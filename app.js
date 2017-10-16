@@ -27,10 +27,15 @@ app.use(express.methodOverride());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
-var compiledCard = pug.compileFile('./views/card.pug')
-var blobSvc = azure.createBlobService('tsoblob1', 'ueeY47IjZthiit45wMvVzecnqnkxJnoz0EPfxLHA5gJNGBKRuF7RsBOPHrQ2Ou2QBFNbj+RqP+k89srwPssDaQ==');      
-var tableSvc = azure.createTableService('tsoblob1', 'ueeY47IjZthiit45wMvVzecnqnkxJnoz0EPfxLHA5gJNGBKRuF7RsBOPHrQ2Ou2QBFNbj+RqP+k89srwPssDaQ==');      
-var indexerSvc = new vindexer('55fdf694c6844b27996f06384fa210b8');
+var compiledCard = pug.compileFile('./views/card.pug');
+
+var config = require('./config.json');
+
+console.log(config.blobKey);
+
+var blobSvc = azure.createBlobService('tsoblob1', config.blobKey);      
+var tableSvc = azure.createTableService('tsoblob1', config.tabKey);      
+var indexerSvc = new vindexer(config.videoSub);
 var entGen = azure.TableUtilities.entityGenerator;
 
 var videos = {};
@@ -41,8 +46,7 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/search:filter?', function(req, res, next) {
-
-  var filter = req.param('filter')
+  var filter = req.param('filter');
 
   if (filter.length == 0) {
     retrieveVideos(req, res, next);
@@ -88,6 +92,18 @@ app.get('/search:filter?', function(req, res, next) {
 });
 
 app.get('/delete:videoId?', function(req, res, next) {
+  var videoId = req.param('videoId');
+
+  Vindexer.deleteBreakdown(videoId, {
+        deleteInsights: true
+    })
+    .then( function(result) { 
+      blobSvc.deleteBlob('videos',videoId, function(error, response){
+        if(!error){
+       }
+      });
+    });
+
 });
   
 app.all('/retrieve', function(req, res, next) {

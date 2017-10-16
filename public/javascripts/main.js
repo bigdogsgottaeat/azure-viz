@@ -113,13 +113,14 @@ $(document).ready(function() {
 
         spanClose.onclick = function() 
         {
-            var uploadDialog = document.getElementById('uploadDialog');
-        
+            var uploadDialog = document.getElementById('uploadDialog');     
             uploadDialog.style.display = "none";
 
-            var playVideoDialog = document.getElementById('playVideoDialog');
-        
+            var playVideoDialog = document.getElementById('playVideoDialog');     
             playVideoDialog.style.display = "none";
+
+            var deleteDialog = document.getElementById('deleteDialog');     
+            deleteDialog.style.display = "none";
 
             var videoPlayer = document.getElementById('vid1');
             videoPlayer.pause();  
