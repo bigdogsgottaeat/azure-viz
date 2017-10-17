@@ -46,11 +46,22 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
+function logMessage(message) {
+  
+      console.log(new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') + ' ' + message);
+  
+}
+function logError(message) {
+  
+      console.log(new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') + ' [ERROR] ' + message);
+  
+}
+  
 /**
  *  Respond to Search Request
  * 
- *  @param uri The search Uri
- *  @param callback The callback function to process the Http Request
+ *  @param {String} uri The search Uri
+ *  @param {Function} callback The callback function to process the Http Request
  * 
  */
 app.get('/search:filter?', function(req, res, next) {
@@ -126,7 +137,6 @@ app.all('/retrieve', function(req, res, next) {
 
 app.post('/upload', function (req, res, next) { 
   var form = new multiparty.Form();
-
   var files = [];
 
   form
@@ -136,14 +146,16 @@ app.post('/upload', function (req, res, next) {
       var size = part.byteCount;
       var name = part.filename;
 
-      console.log("Name: '" + name + "' - [" + size + "] - uploading");
+      logMessage("Uploading Part '" + name + "'-' " + size + "'");
       
       streamVideo(name, part, size, function(error) {
 
         if (!error) {
-          res.send('Video: \'' + name + ' - uploaded')
+          logMessage("Uploaded Part '" + name + "'-' " + size + "'");
+          
+          res.send('Video: \'' + name + ' - uploaded');
         } else {
-          console.log('Error: ' + error);          
+          logError( error);          
           res.send({'Error': error});
         }
 
@@ -155,8 +167,10 @@ app.post('/upload', function (req, res, next) {
 
   })
   .on('err', function(err) {
-    console.log('Error:' + err);
+
+    logError(err);
     res.send(err)
+
   })
   .on('end', function() {
     res.end('Received all files');    
@@ -245,6 +259,7 @@ function retrieveVideos(req, res, next) {
   });
    
 }
+
 function indexVideo(name, size, callback) {
   
   indexerSvc.uploadVideo({
@@ -256,7 +271,7 @@ function indexVideo(name, size, callback) {
     .then( function(result) { 
       var videoId = result.body;
       
-      console.log('File: \'' + name + '\' -  [' + size + '] - {' + videoId + '} - indexed');
+      logMessage('File: \'' + name + '\' -  [' + size + '] - (' + videoId + ') - indexed');
         
       tableSvc.createTableIfNotExists(blobTable, function(error, result, response) {                
  
@@ -269,11 +284,13 @@ function indexVideo(name, size, callback) {
 
         tableSvc.insertEntity(blobTable, video, function(error, result, response) {
           if (error) {
-            console.log('Insert [ERROR]: ' + error);
+
+            logError(error);
+          
           } else {
             videos[name] = video;
             
-            console.log("Entity: '" + name + "' - {" + videoId + "} - registered");
+            logMessage("Entity: '" + name + "' - {" + videoId + "} - registered");
 
           }
 
@@ -381,13 +398,13 @@ function reindexVideo(name, video) {
 
       if (!videoId.statusCode && !videoId.ErrorType) {       
       
-        console.log("Video: '" + name + "' - reindexed - [" + result.body + "]");
+        logMessage("Video: '" + name + "' - reindexed - [" + result.body + "]");
       
         getIndexMetadata(video);
       
       } else {
    
-        console.log("Video: '" + name + "' - reindexed (ERROR) - [" + result.body + "]");
+        logMessage("Video: '" + name + "' - reindexed (ERROR) - [" + result.body + "]");
         
       }
       
@@ -404,12 +421,12 @@ function getIndexMetadata(video) {
     try {
      var breakdown = JSON.parse(result.body);
     } catch (e) {
-      console.log('Breakdown [JSON.parse]: ' + e);
+      logError('Breakdown [JSON.parse]: ' + e);
       return;
     }
    
     if (breakdown.ErrorType) {
-      console.log('Index Metadata - Error: \'' + breakdown.ErrorType + '\'');
+      logMessage('Index Metadata - Error: \'' + breakdown.ErrorType + '\'');
       return;
     }
 
@@ -420,9 +437,9 @@ function getIndexMetadata(video) {
     tableSvc.replaceEntity(blobTable, video, function(error, result, response) {
         
       if (error) {
-        console.log('Replace: ' + error);
+        logError('Replace: ' + error);
       } else {
-        console.log("Video: '" + video.RowKey._ + "' - replaced");
+        logMessage("Video: '" + video.RowKey._ + "' - replaced");
       }  
 
     });
