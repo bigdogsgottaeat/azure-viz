@@ -48,7 +48,7 @@ if ('development' == app.get('env')) {
 
 function logMessage(message) {
   
-      console.log(new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') + ' ' + message);
+      console.log(new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') + '[INFO] ' + message);
   
 }
 function logError(message) {
@@ -146,12 +146,12 @@ app.post('/upload', function (req, res, next) {
       var size = part.byteCount;
       var name = part.filename;
 
-      logMessage("Uploading Part '" + name + "'-' " + size + "'");
+      logMessage("Uploading Part - '" + name + "' - '" + size + "'");
       
       streamVideo(name, part, size, function(error) {
 
         if (!error) {
-          logMessage("Uploaded Part '" + name + "'-' " + size + "'");
+          logMessage("Uploaded Part '" + name + "' - '" + size + "'");
           
           res.send('Video: \'' + name + ' - uploaded');
         } else {
