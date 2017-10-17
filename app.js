@@ -31,20 +31,28 @@ var compiledCard = pug.compileFile('./views/card.pug');
 
 var config = require('./config.json');
 
-console.log(config.blobKey);
-
-var blobSvc = azure.createBlobService('tsoblob1', config.blobKey);      
-var tableSvc = azure.createTableService('tsoblob1', config.tabKey);      
-var indexerSvc = new vindexer(config.videoSub);
+var blobSvc = azure.createBlobService('tsoblob1', process.env.AZURE_BLOB_STORAGE_KEY || config.blobKey);      
+var tableSvc = azure.createTableService('tsoblob1', process.env.AZURE_BLOB_TABLE || config.tabKey);      
+var indexerSvc = new vindexer(process.env.VIDEO_INDEXER_SUBSCRIPTION || config.videoSub);
 var entGen = azure.TableUtilities.entityGenerator;
+
+var blobContainer =  process.env.AZURE_BLOB_CONTAINER || config.blobContainer;
+var blobTable =  process.env.AZURE_BLOB_TABLE || config.blobTable;
+var blobPart =  process.env.AZURE_BLOB_PART || config.blobPart;
 
 var videos = {};
 
-// development only
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
+/**
+ *  Respond to Search Request
+ * 
+ *  @param uri The search Uri
+ *  @param callback The callback function to process the Http Request
+ * 
+ */
 app.get('/search:filter?', function(req, res, next) {
   var filter = req.param('filter');
 
@@ -91,6 +99,10 @@ app.get('/search:filter?', function(req, res, next) {
 
 });
 
+/**
+ * Respond to Get Request - Delete Video
+ * 
+ */
 app.get('/delete:videoId?', function(req, res, next) {
   var videoId = req.param('videoId');
 
@@ -98,7 +110,7 @@ app.get('/delete:videoId?', function(req, res, next) {
         deleteInsights: true
     })
     .then( function(result) { 
-      blobSvc.deleteBlob('videos',videoId, function(error, response){
+      blobSvc.deleteBlob(blobContainer, videoId, function(error, response){
         if(!error){
        }
       });
@@ -163,12 +175,12 @@ http.createServer(app).listen(app.get('port'), function() {
 
 function streamVideo(name, part, size, callback) {
   
-  blobSvc.createContainerIfNotExists('videos', {
+  blobSvc.createContainerIfNotExists(blobContainer, {
        publicAccessLevel: 'blob'
     }, 
     function(error, result, response) {
    
-      blobSvc.createBlockBlobFromStream('videos', name, part, size, function (error) {
+      blobSvc.createBlockBlobFromStream(blobContainer, name, part, size, function (error) {
       
         if (!error) {      
             indexVideo(name, size, function(error, video) {
@@ -187,11 +199,11 @@ function streamVideo(name, part, size, callback) {
   
 function retrieveVideos(req, res, next) {
   
-  blobSvc.listBlobsSegmented('videos', null, function(error, result, response) {
+  blobSvc.listBlobsSegmented(blobContainer, null, function(error, result, response) {
     var entries = result.entries;
     
     if (!result) {
-      blobSvc.createContainerIfNotExists('videos', {
+      blobSvc.createContainerIfNotExists(blobContainer, {
         publicAccessLevel: 'blob'
         }, 
         function(error, result, response) {
@@ -237,7 +249,7 @@ function indexVideo(name, size, callback) {
   
   indexerSvc.uploadVideo({
         // Optional
-        videoUrl: 'https://tsoblob1.blob.core.windows.net/videos/' + name,
+        videoUrl: 'https://tsoblob1.blob.core.windows.net/' + blobContainer +'/' + name,
         name:  name,
         externalId: name
     })
@@ -246,16 +258,16 @@ function indexVideo(name, size, callback) {
       
       console.log('File: \'' + name + '\' -  [' + size + '] - {' + videoId + '} - indexed');
         
-      tableSvc.createTableIfNotExists('vizvideos', function(error, result, response) {                
+      tableSvc.createTableIfNotExists(blobTable, function(error, result, response) {                
  
         var video = {
-          PartitionKey: entGen.String('part1'),                    
+          PartitionKey: entGen.String(blobPart),                    
           RowKey: entGen.String(name),
           VideoId: entGen.String(videoId),
           Size: entGen.Int64(size),
         };
 
-        tableSvc.insertEntity('vizvideos', video, function(error, result, response) {
+        tableSvc.insertEntity(blobTable, video, function(error, result, response) {
           if (error) {
             console.log('Insert: ' + error);
           } else {
@@ -303,7 +315,7 @@ function buildCard(video, callback) {
     name: video.RowKey._,
     createTime: (video.Timestamp) ? video.Timestamp._ : '...',
     userName:'<unknown>',
-    id: 'https://tsoblob1.blob.core.windows.net/videos/' + video.RowKey._,
+    id: 'https://tsoblob1.blob.core.windows.net/' + blobContainer + '/' + video.RowKey._,
     imageUrl: video.thumbnailUrl._.toString().endsWith('000000000000') ? '/icons/missing-image.svg' :
               video.thumbnailUrl._
   }));
@@ -314,9 +326,9 @@ function getMetadata(name, result, callback) {
 
   var video = null;
   
-  tableSvc.createTableIfNotExists('vizvideos', function(error, result, response) {            
+  tableSvc.createTableIfNotExists(blobTable, function(error, result, response) {            
 
-    tableSvc.retrieveEntity('vizvideos', 'part1', name, function(error, result, response) {  
+    tableSvc.retrieveEntity(blobTable, blobPart, name, function(error, result, response) {  
      
       if (!error) {
  
@@ -359,7 +371,7 @@ function reindexVideo(name, video) {
   
   indexerSvc.uploadVideo({
         // Optional
-        videoUrl: 'https://tsoblob1.blob.core.windows.net/videos/' + name,
+        videoUrl: 'https://tsoblob1.blob.core.windows.net/' + blobContainer + "/" +  name,
         name:  name,
         externalId: name
   })
@@ -405,7 +417,7 @@ function getIndexMetadata(video) {
     video.userName = entGen.String(breakdown.summarizedInsights.userName);
     video.createTime = entGen.String(breakdown.summarizedInsights.createTime);
       
-    tableSvc.replaceEntity('vizvideos', video, function(error, result, response) {
+    tableSvc.replaceEntity(blobTable, video, function(error, result, response) {
         
       if (error) {
         console.log('Replace: ' + error);
