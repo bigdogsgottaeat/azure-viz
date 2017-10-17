@@ -1,5 +1,16 @@
 $(function() {
 
+    $('#refresh').on('click', function(e) {
+       var parameters = {files:'all'};
+        
+        document.getElementById('waitDialog').style.display = "block";
+                      
+        $.get('/retrieve', parameters, function(data) {
+            $('#mainbox').html(data);
+                document.getElementById('waitDialog').style.display = "none";                            
+        });    
+    });
+          
     $('#search').on('click', function(e) {
         var parameters = {filter:$('#criteria').val()};
  
