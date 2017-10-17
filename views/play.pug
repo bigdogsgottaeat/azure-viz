@@ -1,0 +1,18 @@
+block content
+
+  div#playVideoDialog(class="modal")
+    div(class="modal-content" style="width:684px; height:500px;")
+      div(class="modal-header")
+        span(class="close") &times;
+        h2 Video Player
+      div(class="modal-body")        
+        div#player(style="display:none;")
+          video(id="vid1" width="643px" height="368px" preload="auto")
+             source(id="vid1-source" type="video/mp4")
+        div#playerWait(class="playerWait" style="display:inline-block;")
+          div.loader(style="margin-top:120px;")
+
+        div(style="display: block; width:100%; padding-top:0px;")
+          button#play(class="model-small-button" disabled style="color:LightGrey; font-size:small; background:grey;") &#x25BA;   
+          input#seekbar(type="range" value="0" style="margin:5px; width: 500px; text-align:center; vertical-align:top;")
+          label#downloaded(style="width:100px; height:24px; font-size:xx-small")

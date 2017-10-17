@@ -31,8 +31,8 @@ var compiledCard = pug.compileFile('./views/card.pug');
 
 var config = require('./config.json');
 
-var blobSvc = azure.createBlobService('tsoblob1', process.env.AZURE_BLOB_STORAGE_KEY || config.blobKey);      
-var tableSvc = azure.createTableService('tsoblob1', process.env.AZURE_BLOB_TABLE || config.tabKey);      
+var blobSvc = azure.createBlobService(process.env.AZURE_BLOB_SERVICE || config.blobService, process.env.AZURE_BLOB_STORAGE_KEY || config.blobKey);      
+var tableSvc = azure.createTableService(process.env.AZURE_BLOB_SERVICE || config.blobService, process.env.AZURE_BLOB_TABLE_KEY || config.tabKey);      
 var indexerSvc = new vindexer(process.env.VIDEO_INDEXER_SUBSCRIPTION || config.videoSub);
 var entGen = azure.TableUtilities.entityGenerator;
 
@@ -269,11 +269,11 @@ function indexVideo(name, size, callback) {
 
         tableSvc.insertEntity(blobTable, video, function(error, result, response) {
           if (error) {
-            console.log('Insert: ' + error);
+            console.log('Insert [ERROR]: ' + error);
           } else {
             videos[name] = video;
             
-            console.log("Entity: '" + name + "' - {" + videoId + "} - registered" - " + result");
+            console.log("Entity: '" + name + "' - {" + videoId + "} - registered");
 
           }
 

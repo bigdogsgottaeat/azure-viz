@@ -4,5 +4,6 @@
     "videoSub" : "55fdf694c6844b27996f06384fa210b8",
     "blobContainer": "videos",
     "blobTable": "vizvideos",
-    "blobPart": "part1"
+    "blobPart": "part1",
+    "blobService": "tsoblob1"
 }

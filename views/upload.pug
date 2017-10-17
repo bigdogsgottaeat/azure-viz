@@ -1,0 +1,16 @@
+block content
+  div#uploadDialog(class="modal")
+    div(class="modal-content")
+      div(class="modal-header")
+        span(class="close") &times;
+        h2 Video Upload
+      div(class="modal-body")
+        .p &nbsp;
+        label(class="modal-label" for="filename" style="margin-top:12px; padding-top:40px; font-size:18px;") Please select the Video File (mp4)
+        div(style="display: block; width:100%; padding-top:8px;")
+          input#filename(class="model-input"  type="text" name="filename" placeholder="<No file selected>" style="width:70%; height:32px; margin-right:20px" readonly)
+          button(class="modal-btn" id="Browse" style="z-index:1;") Select...              
+          input#selector(name="selector" class="hide"  type="file" style="z-index:1; left:-120px")
+        div(style="padding: 24px")
+          button#upload(class="modal-btn" disabled style="color:LightGrey; background:grey") Upload   
+  
