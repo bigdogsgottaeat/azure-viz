@@ -86,7 +86,7 @@ $(function() {
                     var xhr = $.ajaxSettings.xhr();
 
                     xhr.upload.addEventListener('progress', function (event) {
-                        alert('Progress': event.loaded);
+                        alert(event.loaded);
 
                     }, false);
                    
@@ -99,8 +99,8 @@ $(function() {
                 error: function (err) {
                     document.getElementById('waitDialog').style.display = "none";  
                     
-                      alert('Error: [' + err.status + "] : '" + err.statusText + "]");
-   
+                     alert('Error: [' + err.status + '] - ' + err.statusMessage + "'");
+
                     var notification = new Notification("Error in uploaded", {
                         dir: "auto",
                         lang: "",
