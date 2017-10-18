@@ -99,7 +99,7 @@ $(function() {
                     document.getElementById('waitDialog').style.display = "none";  
                     
                     for (var field in  err) {
-                      alert('Error: ' + err[field]);
+                      alert('Error: ' + field + ":" + err[field]);
                     }
 
                     var notification = new Notification("Error in uploaded", {
