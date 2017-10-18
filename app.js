@@ -283,6 +283,7 @@ function indexVideo(name, size, callback) {
         };
 
         tableSvc.insertEntity(blobTable, video, function(error, result, response) {
+          
           if (error) {
 
             logError(error);

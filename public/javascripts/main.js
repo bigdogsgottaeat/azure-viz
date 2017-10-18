@@ -73,7 +73,8 @@ $(function() {
                     var parameters = {filter:'all'};
                     $.get('/retrieve', parameters, function(data) {
                         $('#mainbox').html(data);
-                        document.getElementById('waitDialog').style.display = "none";                        
+                        document.getElementById('waitDialog').style.display = "none";     
+                        alert('File uploaded');                   
                      });   
                      
                 },
@@ -91,6 +92,8 @@ $(function() {
                 error: function (err) {
                     document.getElementById('waitDialog').style.display = "none";  
 
+                    alert(err);
+                    
                     var notification = new Notification("Error in uploaded", {
                         dir: "auto",
                         lang: "",
