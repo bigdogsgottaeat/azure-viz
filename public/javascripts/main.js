@@ -66,6 +66,7 @@ $(function() {
                 url: '/upload',
                 type: 'POST',
                 timeout: '6000000',
+                maxChunkSize: 10000000,
                 async: true,
                 contentType: false,
                 processData: false,
@@ -85,7 +86,7 @@ $(function() {
                     var xhr = $.ajaxSettings.xhr();
 
                     xhr.upload.addEventListener('progress', function (event) {
-                        alert(event.loaded);
+                        alert('Progress': event.loaded);
 
                     }, false);
                    
