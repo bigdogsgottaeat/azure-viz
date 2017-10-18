@@ -65,7 +65,7 @@ $(function() {
             $.ajax({
                 url: '/upload',
                 type: 'POST',
-                timeout: '600000',
+                timeout: '6000000',
                 async: true,
                 contentType: false,
                 processData: false,
@@ -86,17 +86,21 @@ $(function() {
 
                     xhr.upload.addEventListener('progress', function (event) {
                         alert(event.loaded);
+
                     }, false);
                    
                     xhr.upload.onload = function() {
-                   };
+                     };
 
                     return xhr;
 
                 },
                 error: function (err) {
                     document.getElementById('waitDialog').style.display = "none";  
-                    alert('Error: ' + err.statusText);
+                    
+                    for (var field in  err) {
+                      alert('Error: ' + err[field]);
+                    }
 
                     var notification = new Notification("Error in uploaded", {
                         dir: "auto",
