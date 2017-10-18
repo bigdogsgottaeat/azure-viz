@@ -98,10 +98,8 @@ $(function() {
                 error: function (err) {
                     document.getElementById('waitDialog').style.display = "none";  
                     
-                    for (var field in  err) {
-                      alert('Error: ' + field + ":" + err[field]);
-                    }
-
+                      alert('Error: [' + err.status + "] : '" + err.statusText + "]");
+   
                     var notification = new Notification("Error in uploaded", {
                         dir: "auto",
                         lang: "",
