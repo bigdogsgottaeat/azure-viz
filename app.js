@@ -155,7 +155,7 @@ app.post('/upload', function (req, res, next) {
           
           res.send('Video: \'' + name + ' - uploaded');
         } else {
-          logError( error);          
+          logError(error);          
           res.send({'Error': error});
         }
 

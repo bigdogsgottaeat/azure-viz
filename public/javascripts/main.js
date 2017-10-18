@@ -64,25 +64,30 @@ $(function() {
             
             $.ajax({
                 url: '/upload',
-                type: "POST",
+                type: 'POST',
+                timeout: '600000',
+                async: true,
                 contentType: false,
                 processData: false,
                 data: fileData,
                 success: function (result) {
-                   
+                   alert('File Uploaded');
                     var parameters = {filter:'all'};
+
                     $.get('/retrieve', parameters, function(data) {
                         $('#mainbox').html(data);
                         document.getElementById('waitDialog').style.display = "none";     
-                        alert('File uploaded');                   
+                        alert('Page refreshed');                   
                      });   
                      
                 },
                 xhr: function() {
                     var xhr = $.ajaxSettings.xhr();
 
-                    xhr.upload.onprogress = function(evt) {
-                    }
+                    xhr.upload.addEventListener('progress', function (event) {
+                        alert(event.loaded);
+                    }, false);
+                   
                     xhr.upload.onload = function() {
                    };
 
@@ -91,9 +96,8 @@ $(function() {
                 },
                 error: function (err) {
                     document.getElementById('waitDialog').style.display = "none";  
+                    alert('Error: ' + err.statusText);
 
-                    alert(err);
-                    
                     var notification = new Notification("Error in uploaded", {
                         dir: "auto",
                         lang: "",
