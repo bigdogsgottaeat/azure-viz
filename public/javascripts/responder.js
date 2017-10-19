@@ -129,3 +129,10 @@ function requestSearch() {
      });
 
 }
+
+function deleteVideo(uri, name) {  
+ 
+    document.getElementById('deleteDialog').style.display = "block";
+    
+
+}

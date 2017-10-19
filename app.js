@@ -60,8 +60,8 @@ function logError(message) {
 /**
  *  Respond to Search Request
  * 
- *  @param {String} uri The search Uri
- *  @param {Function} callback The callback function to process the Http Request
+ *  @param {string} uri The search Uri
+ *  @param {function} callback The callback function to process the Http Request
  * 
  */
 app.get('/search:filter?', function(req, res, next) {
@@ -113,22 +113,47 @@ app.get('/search:filter?', function(req, res, next) {
 /**
  * Respond to Get Request - Delete Video
  * 
+ * @param {string} filter The URI Filter
+ * @param {function} responder The responder to the web application
+ * 
  */
 app.get('/delete:videoId?', function(req, res, next) {
-  var videoId = req.param('videoId');
+  var name = req.param('video');
 
-  Vindexer.deleteBreakdown(videoId, {
-        deleteInsights: true
-    })
-    .then( function(result) { 
-      blobSvc.deleteBlob(blobContainer, videoId, function(error, response){
-        if(!error){
-       }
+  tableSvc.retrieveEntity(blobTable, blobPart, name, function(error, result, response) {  
+     if (!error) {
+       video = result;
+       blobSvc.deleteBlob(blobContainer, name, function(error, response) {
+          if (!error) { 
+            logMessage('Video Blob - \'' + name + '\' - deleted');
+          } else {
+            logError(error);  
+          }
+
+       });
+
+       Vindexer.deleteBreakdown(JSON.parse(video.VideoId._), {
+          deleteInsights: true
+       })
+      .then( function(result) { 
+        logMessage('Video Breakdown - \'' + JSON.parse(video.VideoId._) + '\' - deleted'); 
       });
-    });
+
+    } else {
+      logError(error);  
+    }
+
+  });
 
 });
-  
+
+/**
+ * Respond to Get Request - Retrieve all Videos
+ * 
+ * @param {string} filter The URI Filter
+ * @param {function} responder The responder to the web application
+ * 
+ */
 app.all('/retrieve', function(req, res, next) {
 
   retrieveVideos(req, res, next);
@@ -186,7 +211,14 @@ http.createServer(app).listen(app.get('port'), function() {
   console.log('Express server listening on port: \'' + app.get('port') +'\'');
 });
 
-
+/**
+ * Stream the Video
+ * 
+ * @param {string} name 
+ * @param {string} part 
+ * @param {integer} size 
+ * @param {function} callback 
+ */
 function streamVideo(name, part, size, callback) {
   
   blobSvc.createContainerIfNotExists(blobContainer, {
@@ -210,7 +242,14 @@ function streamVideo(name, part, size, callback) {
    });
   
 }
-  
+
+/**
+ * List all the Blobs within a container 
+ * 
+ * @param {*} req the HTTP request
+ * @param {*} res the HTTP response
+ * @param {*} next 
+ */
 function retrieveVideos(req, res, next) {
   
   blobSvc.listBlobsSegmented(blobContainer, null, function(error, result, response) {
@@ -260,6 +299,13 @@ function retrieveVideos(req, res, next) {
    
 }
 
+/**
+ * Call the Video Indexer
+ * 
+ * @param {string} name the video's filename 
+ * @param {integer} size the video's size
+ * @param {function} callback called when the function has completed 
+ */
 function indexVideo(name, size, callback) {
   
   indexerSvc.uploadVideo({
@@ -305,6 +351,13 @@ function indexVideo(name, size, callback) {
 
 }
 
+/**
+ * Call the Video Indexer
+ * 
+ * @param {string} name the video's filename 
+ * @param {*} result the result
+ * @param {function} callback called when the function has completed 
+ */
 function createCard(name, result, callback) {
 
   if (!videos[name] || !(videos[name].thumbnailUrl)) {
@@ -327,6 +380,12 @@ function createCard(name, result, callback) {
 
 }
 
+/**
+ * Build the Card
+ * 
+ * @param {*} video 
+  * @param {function} callback called when the function has completed 
+ */
 function buildCard(video, callback) {
 
   callback(false, compiledCard({

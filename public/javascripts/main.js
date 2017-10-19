@@ -129,8 +129,7 @@ $(document).ready(function() {
     for (var iSpanClose in document.getElementsByClassName("close")) {
         var spanClose =  document.getElementsByClassName("close")[iSpanClose];
 
-        spanClose.onclick = function() 
-        {
+        spanClose.onclick = function() {
             var uploadDialog = document.getElementById('uploadDialog');     
             uploadDialog.style.display = "none";
 
