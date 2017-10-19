@@ -137,3 +137,9 @@ function deleteVideo(imageUri, name) {
    $('#deleteDialogImage').attr('src', imageUri);
     
 }
+
+function downloadVideo(imageUri) {
+
+     window.location.href = imageUri;
+
+}
