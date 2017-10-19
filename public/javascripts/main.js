@@ -65,7 +65,6 @@ $(function() {
             $.ajax({
                 url: '/upload',
                 type: 'POST',
-                timeout: '6000000',
                 maxChunkSize: 10000000,
                 async: true,
                 contentType: false,
@@ -78,7 +77,6 @@ $(function() {
                     $.get('/retrieve', parameters, function(data) {
                         $('#mainbox').html(data);
                         document.getElementById('waitDialog').style.display = "none";     
-                        alert('Page refreshed');                   
                      });   
                      
                 },
@@ -86,12 +84,10 @@ $(function() {
                     var xhr = $.ajaxSettings.xhr();
 
                     xhr.upload.addEventListener('progress', function (event) {
-                        alert(event.loaded);
-
                     }, false);
                    
                     xhr.upload.onload = function() {
-                     };
+                    };
 
                     return xhr;
 
@@ -99,13 +95,14 @@ $(function() {
                 error: function (err) {
                     document.getElementById('waitDialog').style.display = "none";  
                     
-                     alert('Error: [' + err.status + '] - ' + err.statusMessage + "'");
+                    alert('Error: [' + err.status + '] - \'' + err.statusText + '\'');
 
-                    var notification = new Notification("Error in uploaded", {
+                    var notification = new Notification("Error in upload", {
                         dir: "auto",
                         lang: "",
-                        body: "Error in uploading file",
+                        body:'Error: [' + err.status + '] - \'' + err.statusText + '\'',
                         tag: "Upload Error"
+
                 });
                 }
             });
@@ -151,7 +148,6 @@ $(document).ready(function() {
             videoPlayer.load();
 
         }
-
 
     }
 
