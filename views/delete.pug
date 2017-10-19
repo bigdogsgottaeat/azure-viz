@@ -1,15 +1,12 @@
 block content
 
   div#deleteDialog(class="modal")
-    div(class="modal-content" style="width:484px; height:300px;")
+    div(class="modal-content" style="width:484px; height:430px;")
       div(class="modal-header")
         span(class="close") &times;
-        h2 Video Player
+        h2 Delete Video
       div(class="modal-body")        
-        img(style='width:310px; height:200px; text-align:center;')
-      div(style="padding: 24px")   
-        div(style="display: block; width:100%; padding-top:0px;")
-          button#deleteVideo(class="model-button") Delete  
-        div(style="display: block; width:100%; padding-top:0px;")
-          button#cancelDelete(class="model-button") Delete  
-          
+        img#deleteDialogImage(style='width:445px; height:270px; text-align:center;')
+        div(style="padding: 10px")
+          button.modal-btn(id='deleteVideo') Delete  
+               

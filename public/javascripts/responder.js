@@ -130,9 +130,10 @@ function requestSearch() {
 
 }
 
-function deleteVideo(uri, name) {  
+function deleteVideo(imageUri, name) {  
  
-    document.getElementById('deleteDialog').style.display = "block";
-    
+   document.getElementById('deleteDialog').style.display = "block";
 
+   $('#deleteDialogImage').attr('src', imageUri);
+    
 }
