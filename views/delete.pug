@@ -1,13 +1,13 @@
 block content
 
   div#deleteDialog(class="modal")
-    div(class="modal-content" style="width:484px; height:430px;")
+    div(class="modal-content" style="width:484px; height:450px;")
       div(class="modal-header")
         span(class="close") &times;
         h2 Delete Video
       div(class="modal-body")        
         img#deleteDialogImage(style='width:445px; height:270px; text-align:center;')
+        b#deleteVideoName(style='font-size:10px;')
         div(style="padding: 10px")
           button.modal-btn(id='deleteVideo') Delete  
           button.modal-cancel-btn(id='cancelVideo') Cancel  
-               

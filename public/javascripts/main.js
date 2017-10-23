@@ -10,7 +10,13 @@ $(function() {
                 document.getElementById('waitDialog').style.display = "none";                            
         });    
     });
-          
+         
+    $('#okUploadConfirmation').on('click', function(e) {
+
+        document.getElementById('confirmationDialog').style.display = "none";
+        
+    });
+
     $('#search').on('click', function(e) {
         var parameters = {filter:$('#criteria').val()};
  
@@ -71,12 +77,13 @@ $(function() {
                 processData: false,
                 data: fileData,
                 success: function (result) {
-                   alert('File Uploaded');
                     var parameters = {filter:'all'};
 
                     $.get('/retrieve', parameters, function(data) {
                         $('#mainbox').html(data);
-                        document.getElementById('waitDialog').style.display = "none";     
+                        document.getElementById('waitDialog').style.display = "none"; 
+                        $('#uploadedFileName').html('Video: \'' + $('#filename').val().replace(/^.*[\\\/]/, '') + '\'');
+                        document.getElementById('confirmationDialog').style.display = "block";
                      });   
                      
                 },
@@ -138,6 +145,9 @@ $(document).ready(function() {
 
             var deleteDialog = document.getElementById('deleteDialog');     
             deleteDialog.style.display = "none";
+  
+            var confirmationDialog = document.getElementById('confirmationDialog');     
+            confirmationDialog.style.display = "none";
 
             var videoPlayer = document.getElementById('vid1');
             videoPlayer.pause();  

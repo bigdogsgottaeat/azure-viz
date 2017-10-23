@@ -134,6 +134,7 @@ function deleteVideo(imageUri, name) {
  
    document.getElementById('deleteDialog').style.display = "block";
 
+   $('#deleteVideoName').html(name);
    $('#deleteDialogImage').attr('src', imageUri);
     
 }
